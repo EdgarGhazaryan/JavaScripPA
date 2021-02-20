@@ -82,7 +82,7 @@ function getByName(name, res) {
     }));
 }
 
-function updateUser(id, userData, res) {
+async function updateUser(id, userData, res) {
     let users = getAllUsersInArray();
     let isUserFound = false;
 
@@ -90,7 +90,8 @@ function updateUser(id, userData, res) {
         if(users[i].id === id) {
             users[i].fullName = userData.fullName;
             users[i].email = userData.email;
-            users[i].password = userData.password;
+            users[i].password = await bcrypt.hash(userData.password, 10);
+            isUserFound = true;
         }
     }
 
