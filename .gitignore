@@ -1,5 +1,5 @@
 .idea/
 *.iml
 out/
+/node_modules/
 
-/src/homeworks/dotenv/node_modules/
