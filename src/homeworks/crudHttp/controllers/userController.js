@@ -2,40 +2,47 @@ const fs = require('fs');
 const bcrypt = require('bcryptjs');
 
 async function createUser(user, res) {
-    let errorMessage = validate(user);
-    if (errorMessage) {
-        res.statusCode = 400;
-        return res.end(JSON.stringify({message: errorMessage}));
-    }
-
-    let users = getAllUsersInArray();
-
-    for(let oldUser of users) {
-        if(oldUser.email === user.email) {
+    try {
+        let errorMessage = validate(user);
+        if (errorMessage) {
             res.statusCode = 400;
-            return res.end(JSON.stringify({
-                message: "User with this email has already existed"
-            }));
+            return res.end(JSON.stringify({message: errorMessage}));
         }
-    }
 
-    let lastIndex = users.length === 0 ? 0 : users[users.length - 1].id;
-    user.id = ++lastIndex;
-    user.password = await bcrypt.hash(user.password, 10);
-    users.push(user);
+        let users = getAllUsersInArray();
 
-    fs.writeFile('./db/users.json', JSON.stringify(users), err => {
-        if (err) {
-            res.statusCode = 500;
-            return res.end(JSON.stringify({
-                message: err.message
-            }));
+        for (let oldUser of users) {
+            if (oldUser.email === user.email) {
+                res.statusCode = 400;
+                return res.end(JSON.stringify({
+                    message: "User with this email has already existed"
+                }));
+            }
         }
-        res.statusCode = 201;
+
+        let lastIndex = users.length === 0 ? 0 : users[users.length - 1].id;
+        user.id = ++lastIndex;
+        user.password = await bcrypt.hash(user.password, 10);
+        users.push(user);
+
+        fs.writeFile('./db/users.json', JSON.stringify(users), err => {
+            if (err) {
+                res.statusCode = 500;
+                return res.end(JSON.stringify({
+                    message: err.message
+                }));
+            }
+            res.statusCode = 201;
+            return res.end(JSON.stringify({
+                message: "You have successfully registered"
+            }));
+        });
+    } catch (err) {
+        res.statusCode = 500;
         return res.end(JSON.stringify({
-            message: "You have successfully registered"
+            message: err.message
         }));
-    });
+    }
 }
 
 function getAllUsers(res) {
@@ -83,37 +90,45 @@ function getByName(name, res) {
 }
 
 async function updateUser(id, userData, res) {
-    let users = getAllUsersInArray();
-    let isUserFound = false;
+    try {
+        let users = getAllUsersInArray();
+        let isUserFound = false;
 
-    for(let i = 0; i < users.length; ++i) {
-        if(users[i].id === id) {
-            users[i].fullName = userData.fullName;
-            users[i].email = userData.email;
-            users[i].password = await bcrypt.hash(userData.password, 10);
-            isUserFound = true;
+        for (let i = 0; i < users.length; ++i) {
+            if (users[i].id === id) {
+                users[i].fullName = userData.fullName;
+                users[i].email = userData.email;
+                users[i].password = await bcrypt.hash(userData.password, 10);
+                isUserFound = true;
+                break;
+            }
         }
-    }
 
-    if(!isUserFound) {
-        res.statusCode = 404;
-        return res.end(JSON.stringify({
-            message: "User not found"
-        }));
-    }
-
-    fs.writeFile('./db/users.json', JSON.stringify(users), err => {
-        if (err) {
-            res.statusCode = 500;
+        if (!isUserFound) {
+            res.statusCode = 404;
             return res.end(JSON.stringify({
-                message: err.message
+                message: "User not found"
             }));
         }
-        res.statusCode = 200;
+
+        fs.writeFile('./db/users.json', JSON.stringify(users), err => {
+            if (err) {
+                res.statusCode = 500;
+                return res.end(JSON.stringify({
+                    message: err.message
+                }));
+            }
+            res.statusCode = 200;
+            return res.end(JSON.stringify({
+                message: "User successfully updated"
+            }));
+        });
+    } catch (err) {
+        res.statusCode = 500;
         return res.end(JSON.stringify({
-            message: "User successfully updated"
+            message: err.message
         }));
-    });
+    }
 }
 
 function deleteUser(id, res) {
@@ -124,6 +139,7 @@ function deleteUser(id, res) {
         if(users[i].id === id) {
             users.splice(i, 1);
             isUserFound = true;
+            break;
         }
     }
 
