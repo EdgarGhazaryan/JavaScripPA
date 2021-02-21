@@ -168,12 +168,12 @@ function getSearchKey(str, isNumberNeeded, isStringNeeded) {
     let arr = str.split('/');
     let searchKey = Number(arr[arr.length - 1]);
 
-    if (typeof searchKey === "number" && !isNaN(searchKey) && arr.length === 4 && isNumberNeeded) {
+    if (!isNaN(searchKey) && arr.length === 4 && isNumberNeeded) {
         return searchKey;
     }
 
     searchKey = arr[arr.length - 1];
-    if (typeof searchKey === "string" && arr.length === 4 && isStringNeeded) {
+    if (arr.length === 4 && isStringNeeded) {
         return searchKey;
     }
     return undefined;
