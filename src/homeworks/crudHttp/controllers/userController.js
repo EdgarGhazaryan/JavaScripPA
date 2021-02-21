@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const bcrypt = require('bcryptjs');
 
 async function createUser(user, res) {
@@ -9,7 +9,10 @@ async function createUser(user, res) {
             return res.end(JSON.stringify({message: errorMessage}));
         }
 
-        let users = getAllUsersInArray();
+        let users = await getAllUsersInArray();
+        if(!users) {
+            throw new Error("Error while reading from db");
+        }
 
         for (let oldUser of users) {
             if (oldUser.email === user.email) {
@@ -25,18 +28,11 @@ async function createUser(user, res) {
         user.password = await bcrypt.hash(user.password, 10);
         users.push(user);
 
-        fs.writeFile('./db/users.json', JSON.stringify(users), err => {
-            if (err) {
-                res.statusCode = 500;
-                return res.end(JSON.stringify({
-                    message: err.message
-                }));
-            }
-            res.statusCode = 201;
-            return res.end(JSON.stringify({
-                message: "You have successfully registered"
-            }));
-        });
+        await fs.writeFile('./db/users.json', JSON.stringify(users));
+        res.statusCode = 201;
+        return res.end(JSON.stringify({
+            message: "You have successfully registered"
+        }));
     } catch (err) {
         res.statusCode = 500;
         return res.end(JSON.stringify({
@@ -45,53 +41,96 @@ async function createUser(user, res) {
     }
 }
 
-function getAllUsers(res) {
-    const users = getAllUsersInArray();
-    for(let i = 0; i < users.length; ++i) {
-        delete users[i].password;
-    }
+async function getAllUsers(res) {
+    try {
+        let users = await getAllUsersInArray();
+        if (!users) {
+            throw new Error("Error while reading from db");
+        }
 
-    res.statusCode = 200;
-    return res.end(JSON.stringify({users}));
+        for (let i = 0; i < users.length; ++i) {
+            delete users[i].password;
+        }
+
+        res.statusCode = 200;
+        return res.end(JSON.stringify({users}));
+    } catch (err) {
+        res.statusCode = 500;
+        return res.end(JSON.stringify({
+            message: err.message
+        }));
+    }
 }
 
-function getById(id, res) {
-    const users = getAllUsersInArray();
-    for (let user of users) {
-        if (user.id === id) {
-            delete user.password;
-            res.statusCode = 200;
-            return res.end(JSON.stringify({user}));
+async function getById(id, res) {
+    try {
+        let users = await getAllUsersInArray();
+        if (!users) {
+            throw new Error("Error while reading from db");
         }
+
+        for (let user of users) {
+            if (user.id === id) {
+                delete user.password;
+                res.statusCode = 200;
+                return res.end(JSON.stringify({user}));
+            }
+        }
+        res.statusCode = 404;
+        return res.end(JSON.stringify({
+            message: "User not found"
+        }));
+    } catch (err) {
+        res.statusCode = 500;
+        return res.end(JSON.stringify({
+            message: err.message
+        }));
     }
-    res.statusCode = 404;
-    return res.end(JSON.stringify({
-        message: "User not found"
-    }));
 }
 
-function getByName(name, res) {
-    if(name.includes("%20")) {
-        name = name.replace("%20", " ");
-    }
-
-    const users = getAllUsersInArray();
-    for (let user of users) {
-        if (user.fullName === name) {
-            delete user.password;
-            res.statusCode = 200;
-            return res.end(JSON.stringify({user}));
+async function getByName(name, res) {
+    try {
+        if (name.includes("%20")) {
+            name = name.replace("%20", " ");
         }
+
+        let users = await getAllUsersInArray();
+        if (!users) {
+            throw new Error("Error while reading from db");
+        }
+
+        const foundedUsers = [];
+        for (let user of users) {
+            if (user.fullName === name) {
+                delete user.password;
+                foundedUsers.push(user);
+            }
+        }
+        if(foundedUsers.length !== 0) {
+            res.statusCode = 200;
+            return res.end(JSON.stringify({
+                "users": foundedUsers
+            }));
+        }
+
+        res.statusCode = 404;
+        return res.end(JSON.stringify({
+            message: "User not found"
+        }));
+    } catch (err) {
+        res.statusCode = 500;
+        return res.end(JSON.stringify({
+            message: err.message
+        }));
     }
-    res.statusCode = 404;
-    return res.end(JSON.stringify({
-        message: "User not found"
-    }));
 }
 
 async function updateUser(id, userData, res) {
     try {
-        let users = getAllUsersInArray();
+        let users = await getAllUsersInArray();
+        if(!users) {
+            throw new Error("Error while reading from db");
+        }
         let isUserFound = false;
 
         for (let i = 0; i < users.length; ++i) {
@@ -111,18 +150,11 @@ async function updateUser(id, userData, res) {
             }));
         }
 
-        fs.writeFile('./db/users.json', JSON.stringify(users), err => {
-            if (err) {
-                res.statusCode = 500;
-                return res.end(JSON.stringify({
-                    message: err.message
-                }));
-            }
-            res.statusCode = 200;
-            return res.end(JSON.stringify({
-                message: "User successfully updated"
-            }));
-        });
+        await fs.writeFile('./db/users.json', JSON.stringify(users));
+        res.statusCode = 200;
+        return res.end(JSON.stringify({
+            message: "User successfully updated"
+        }));
     } catch (err) {
         res.statusCode = 500;
         return res.end(JSON.stringify({
@@ -131,37 +163,40 @@ async function updateUser(id, userData, res) {
     }
 }
 
-function deleteUser(id, res) {
-    let users = getAllUsersInArray();
-    let isUserFound = false;
-
-    for(let i = 0; i < users.length; ++i) {
-        if(users[i].id === id) {
-            users.splice(i, 1);
-            isUserFound = true;
-            break;
+async function deleteUser(id, res) {
+    try {
+        let users = await getAllUsersInArray();
+        if (!users) {
+            throw new Error("Error while reading from db");
         }
-    }
+        let isUserFound = false;
 
-    if(!isUserFound) {
-        res.statusCode = 404;
-        return res.end(JSON.stringify({
-            message: "User not found"
-        }));
-    }
+        for (let i = 0; i < users.length; ++i) {
+            if (users[i].id === id) {
+                users.splice(i, 1);
+                isUserFound = true;
+                break;
+            }
+        }
 
-    fs.writeFile('./db/users.json', JSON.stringify(users), err => {
-        if (err) {
-            res.statusCode = 500;
+        if (!isUserFound) {
+            res.statusCode = 404;
             return res.end(JSON.stringify({
-                message: err.message
+                message: "User not found"
             }));
         }
+
+        await fs.writeFile('./db/users.json', JSON.stringify(users));
         res.statusCode = 200;
         return res.end(JSON.stringify({
             message: "User successfully deleted"
         }));
-    });
+    } catch (err) {
+        res.statusCode = 500;
+        return res.end(JSON.stringify({
+            message: err.message
+        }));
+    }
 }
 
 function getSearchKey(str, isNumberNeeded, isStringNeeded) {
@@ -224,14 +259,17 @@ function validate(user) {
     return undefined;
 }
 
-function getAllUsersInArray() {
-    const data = fs.readFileSync('./db/users.json');
-    let users;
-    if (data.toString().length === 0) {
-        users = [];
-    } else {
-        users = JSON.parse(data);
+async function getAllUsersInArray() {
+    try {
+        const data = await fs.readFile('./db/users.json');
+        let users;
+        if (data.toString().length === 0) {
+            users = [];
+        } else {
+            users = JSON.parse(data);
+        }
+        return users;
+    } catch (err) {
+        return undefined;
     }
-
-    return users;
 }
