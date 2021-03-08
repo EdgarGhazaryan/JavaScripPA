@@ -5,3 +5,5 @@ out/
 /src/homeworks/crudHttp/node_modules/
 /src/homeworks/dotenv/node_modules/
 /src/homeworks/crudExpress/node_modules/
+
+/src/homeworks/project/node_modules/
