@@ -117,3 +117,9 @@ Parameters
     id - params parameter, required
 
 ```
+
+# Resources
+
+* **[Image uploading](https://www.youtube.com/watch?v=srPXMt1Q0nY)**
+* **[MongoDB documentation](https://docs.mongodb.com/manual/)**   
+* **[Mongoose documentation](https://mongoosejs.com/docs/guides.html)**
