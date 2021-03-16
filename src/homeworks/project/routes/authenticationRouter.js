@@ -7,11 +7,11 @@ const UserService = require('../services/UserService');
 
 const userService = new UserService();
 const authenticationService = new AuthenticationService();
-const authenticationController = new AuthenticationController(authenticationService, userService);
+const authenticationController = AuthenticationController(authenticationService, userService);
 
-authRouter.post('/register', authenticationController.register.bind(authenticationController));
+authRouter.post('/register', authenticationController.register);
 
-authRouter.post('/login',  authenticationController.login.bind(authenticationController));
+authRouter.post('/login',  authenticationController.login);
 
 
 module.exports = authRouter;

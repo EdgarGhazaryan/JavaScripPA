@@ -12,7 +12,7 @@ class PostService {
         const newPost = new Post({
             userId,
             description,
-            images: images.map(i => '/uploads/images/' + i.filename)
+            images: (images || []).map(i => '/uploads/images/' + i.filename)
         });
         await newPost.save();
     }
@@ -28,7 +28,7 @@ class PostService {
 
     async updatePostById(postId, post) {
         let {description, images} = post;
-        images = images.map(i => '/uploads/images/' + i.filename);
+        images = (images || []).map(i => '/uploads/images/' + i.filename);
         const oldPost = await Post.findById(postId);
         if(!oldPost) {
             return false;

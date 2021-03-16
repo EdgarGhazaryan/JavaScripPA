@@ -1,11 +1,7 @@
-class UserController {
-    constructor(userService, authenticationService, postService) {
-        this.userService = userService;
-        this.postService = postService;
-        this.authenticationService = authenticationService;
-    }
+module.exports = (userService, authenticationService, postService) => {
+    return {updateUser, getUserByUsername, getUserById, getUserPosts};
 
-    async updateUser(req, res, next) {
+    async function updateUser(req, res, next) {
         try {
             const {username, email, password} = req.body;
             const user = {
@@ -14,12 +10,12 @@ class UserController {
                 password: password || null,
             }
 
-            let validationMessage = await this.authenticationService.validate(user);
+            let validationMessage = await authenticationService.validate(user);
             if (validationMessage) {
                 return next({statusCode: 400, message: validationMessage});
             }
 
-            const isUpdated = await this.userService.updateUserById(req.userId, user);
+            const isUpdated = await userService.updateUserById(req.userId, user);
             if(isUpdated) {
                 return res.status(200).json({message: 'User info successfully updated'});
             }
@@ -31,14 +27,14 @@ class UserController {
         }
     }
 
-    async getUserByUsername(req, res, next) {
+    async function getUserByUsername(req, res, next) {
         try {
             const username = req.query.username;
             if(!username) {
                 return next({statusCode: 400, message: 'Please mention username'});
             }
 
-            const user = await this.userService.getUsersByName(username);
+            const user = await userService.getUsersByName(username);
             if(user) {
                 return res.status(200).json({
                     message: 'Users successfully found',
@@ -53,11 +49,11 @@ class UserController {
         }
     }
 
-    async getUserById(req, res, next) {
+    async function getUserById(req, res, next) {
         try {
             const id = req.params.id;
 
-            const user = await this.userService.getUserById(id);
+            const user = await userService.getUserById(id);
             if(user) {
                 return res.status(200).json({
                     message: 'User successfully found',
@@ -72,11 +68,11 @@ class UserController {
         }
     }
 
-    async getUserPosts(req, res, next) {
+    async function getUserPosts(req, res, next) {
         try {
             const userId = req.params.id;
 
-            const posts = await this.postService.getPostsByUserId(userId, +req.query.offset, +req.query.limit);
+            const posts = await postService.getPostsByUserId(userId, +req.query.offset, +req.query.limit);
             if(posts) {
                 return res.status(200).json({
                     message: 'Posts successfully found',
@@ -90,7 +86,4 @@ class UserController {
             return next({statusCode: 500, message: err.message});
         }
     }
-}
-
-
-module.exports = UserController;
+};

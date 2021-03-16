@@ -1,20 +1,17 @@
-class AuthenticationController {
-    constructor(authenticationService, userService) {
-        this.authenticationService = authenticationService;
-        this.userService = userService;
-    }
+module.exports = (authenticationService, userService) => {
+    return {register, login};
 
-    async register(req, res, next) {
+    async function register(req, res, next) {
         try {
             const {username, email, password} = req.body;
             const user = {username, email, password};
 
-            let validationMessage = await this.authenticationService.validate(user);
+            let validationMessage = await authenticationService.validate(user);
             if (validationMessage) {
                 return next({statusCode: 400, message: validationMessage});
             }
 
-            await this.userService.saveUser(user);
+            await userService.saveUser(user);
 
             return res.status(201).json({
                 message: `${username}, you are successfully registered.`
@@ -25,11 +22,11 @@ class AuthenticationController {
         }
     }
 
-    async login(req, res, next) {
+    async function login(req, res, next) {
         try {
             const { email, password } = req.body;
 
-            const loginResult = await this.authenticationService.login(email, password);
+            const loginResult = await authenticationService.login(email, password);
             const {message, token, loggedIn} = loginResult;
 
             if(loggedIn) {
@@ -43,6 +40,3 @@ class AuthenticationController {
         }
     }
 }
-
-
-module.exports = AuthenticationController;

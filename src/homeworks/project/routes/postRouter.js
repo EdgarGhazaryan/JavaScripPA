@@ -8,23 +8,25 @@ const PostController = require('../controllers/PostController');
 const PostService = require('../services/PostService');
 
 const postService = new PostService();
-const postController = new PostController(postService);
+const postController = PostController(postService);
 
-postRouter.get('/posts/public', postController.getPublicPosts.bind(postController));
+postRouter.get('/posts/public', postController.getPublicPosts);
 
-postRouter.post('/posts', [checkToken, imageUploader.array('images', 5)], postController.createPost.bind(postController));
+postRouter.use('/posts*', checkToken);
 
-postRouter.put('/posts/:id', [checkToken, imageUploader.array('images', 5)], postController.updatePost.bind(postController));
+postRouter.post('/posts', imageUploader.array('images', 5), postController.createPost);
 
-postRouter.delete('/posts/:id', checkToken, postController.deletePost.bind(postController));
+postRouter.put('/posts/:id', imageUploader.array('images', 5), postController.updatePost);
 
-postRouter.get('/posts', checkToken, postController.getPostByDescription.bind(postController));
+postRouter.delete('/posts/:id', postController.deletePost);
 
-postRouter.get('/posts', checkToken, postController.getPosts.bind(postController));
+postRouter.get('/posts', postController.getPostByDescription);
 
-postRouter.get('/posts/top', checkToken, postController.getTopPosts.bind(postController));
+postRouter.get('/posts', postController.getPosts);
 
-postRouter.get('/posts/:id', checkToken, postController.getPost.bind(postController));
+postRouter.get('/posts/top', postController.getTopPosts);
+
+postRouter.get('/posts/:id', postController.getPost);
 
 
 module.exports = postRouter;

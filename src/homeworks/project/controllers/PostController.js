@@ -1,11 +1,9 @@
-class PostController {
-    constructor(postService) {
-        this.postService = postService;
-    }
+module.exports = (postService) => {
+    return {getPublicPosts, createPost, updatePost, deletePost, getPosts, getTopPosts, getPostByDescription, getPost};
 
-    async getPublicPosts(req, res, next) {
+    async function getPublicPosts(req, res, next) {
         try {
-            const posts = await this.postService.getPosts(+req.query.offset, +req.query.limit);
+            const posts = await postService.getPosts(+req.query.offset, +req.query.limit);
             if(posts) {
                 return res.status(200).json({
                     message: 'Posts successfully found',
@@ -20,7 +18,7 @@ class PostController {
         }
     }
 
-    async createPost(req, res, next) {
+    async function createPost(req, res, next) {
         try {
             const {description} = req.body;
             const images = req.files;
@@ -28,7 +26,7 @@ class PostController {
 
             const post = {userId, description, images};
 
-            await this.postService.createPost(post);
+            await postService.createPost(post);
 
             return res.status(201).json({
                 message: 'Post successfully created'
@@ -39,19 +37,19 @@ class PostController {
         }
     }
 
-    async updatePost(req, res, next) {
+    async function updatePost(req, res, next) {
         try {
             const {description} = req.body;
             const images = req.files;
             const postId = req.params.id;
 
-            const isOwnPost = await this.postService.isOwnPost(req.userId, postId);
+            const isOwnPost = await postService.isOwnPost(req.userId, postId);
             if(!isOwnPost) {
                 return next({statusCode: 403, message: 'This is not your post'});
             }
 
             const post = {description, images};
-            const isUpdated = await this.postService.updatePostById(postId, post);
+            const isUpdated = await postService.updatePostById(postId, post);
             if(isUpdated) {
                 return res.status(200).json({message: 'Post successfully updated'});
             }
@@ -63,17 +61,17 @@ class PostController {
         }
     }
 
-    async deletePost(req, res, next) {
+    async function deletePost(req, res, next) {
         try {
             const userId = req.userId;
             const postId = req.params.id;
 
-            const isOwnPost = await this.postService.isOwnPost(userId, postId);
+            const isOwnPost = await postService.isOwnPost(userId, postId);
             if(!isOwnPost) {
                 return next({statusCode: 403, message: 'This is not your post'});
             }
 
-            await this.postService.deletePostById(postId);
+            await postService.deletePostById(postId);
 
             return res.status(200).json({
                 message: 'Post successfully deleted'
@@ -84,9 +82,9 @@ class PostController {
         }
     }
 
-    async getPosts(req, res, next) {
+    async function getPosts(req, res, next) {
         try {
-            const posts = await this.postService.getPostsByUserId(req.userId, +req.query.offset, +req.query.limit);
+            const posts = await postService.getPostsByUserId(req.userId, +req.query.offset, +req.query.limit);
             if(posts) {
                 return res.status(200).json({
                     message: 'Posts successfully found',
@@ -101,9 +99,9 @@ class PostController {
         }
     }
 
-    async getTopPosts(req, res, next) {
+    async function getTopPosts(req, res, next) {
         try {
-            const posts = await this.postService.getPosts(+req.query.offset, +req.query.limit);
+            const posts = await postService.getPosts(+req.query.offset, +req.query.limit);
             if(posts) {
                 return res.status(200).json({
                     message: 'Posts successfully found',
@@ -118,14 +116,14 @@ class PostController {
         }
     }
 
-    async getPostByDescription(req, res, next) {
+    async function getPostByDescription(req, res, next) {
         try {
             const description = req.query.description;
             if(!description) {
                 return next();
             }
 
-            const posts = await this.postService.getPostsByDescription(description, +req.query.offset, +req.query.limit);
+            const posts = await postService.getPostsByDescription(description, +req.query.offset, +req.query.limit);
             if(posts) {
                 return res.status(200).json({
                     message: 'Posts successfully found',
@@ -140,11 +138,11 @@ class PostController {
         }
     }
 
-    async getPost(req, res, next) {
+    async function getPost(req, res, next) {
         try {
             const id = req.params.id;
 
-            const post = await this.postService.getPostById(id);
+            const post = await postService.getPostById(id);
             if(post) {
                 return res.status(200).json({
                     message: 'User successfully found',
@@ -158,7 +156,4 @@ class PostController {
             return next({statusCode: 500, message: err.message});
         }
     }
-}
-
-
-module.exports = PostController;
+};

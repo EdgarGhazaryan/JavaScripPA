@@ -11,15 +11,17 @@ const AuthenticationService = require('../services/AuthenticationService');
 const authenticationService = new AuthenticationService();
 const postService = new PostService();
 const userService = new UserService();
-const userController = new UserController(userService, authenticationService, postService);
+const userController = UserController(userService, authenticationService, postService);
 
-userRouter.put('/users', checkToken, userController.updateUser.bind(userController));
+userRouter.use('/users*', checkToken);
 
-userRouter.get('/users', checkToken, userController.getUserByUsername.bind(userController));
+userRouter.put('/users', userController.updateUser);
 
-userRouter.get('/users/:id', checkToken, userController.getUserById.bind(userController));
+userRouter.get('/users', userController.getUserByUsername);
 
-userRouter.get('/users/:id/posts', checkToken, userController.getUserPosts.bind(userController));
+userRouter.get('/users/:id', userController.getUserById);
+
+userRouter.get('/users/:id/posts', userController.getUserPosts);
 
 
 module.exports = userRouter;
