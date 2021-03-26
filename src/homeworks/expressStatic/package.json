@@ -1,0 +1,21 @@
+{
+  "name": "expressStatic",
+  "version": "1.0.0",
+  "description": "",
+  "main": "expressStatic.js",
+  "scripts": {
+    "start": "npm app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "glob": "^7.1.6",
+    "glob-promise": "^4.1.0",
+    "mime-types": "^2.1.29",
+    "nodemon": "^2.0.7"
+  }
+}
