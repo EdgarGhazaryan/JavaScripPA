@@ -13,7 +13,7 @@ const loadRepos = async (args) => {
     const limit = args[1] || 5;
     const offset = args[2] || 1;
 
-    const url = `https://api.github.com/repositories?q=${search}&per_page=${limit}&page=${offset}`;
+    const url = `https://api.github.com/search/repositories?q=${search}&per_page=${limit}&page=${offset}`;
     const response = await axios.get(url);
 
     await Repository.deleteMany();
