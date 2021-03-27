@@ -1,9 +1,9 @@
+require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 
 const RedisListenService = require("./services/redisListenService");
-
-require('dotenv').config();
 
 const app = express();
 
